@@ -3,13 +3,19 @@
         {
             "type": "cppbuild",
             "label": "C/C++: g++.exe build active file",
-            "command": "C:\\Coding\\CPP\\mingw64\\bin\\g++.exe",
+            "command": "C:\\Coding\\CPP\\mingw32\\bin\\g++.exe",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
                 "${file}",
+                "Scanner.cpp",
+                "Parser.cpp",
                 "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+                "${fileDirname}\\..\\Release\\${fileBasenameNoExtension}.exe",
+                "-luser32",
+                "-lgdi32",
+                "-lole32",
+                "-lcomctl32"
             ],
             "options": {
                 "cwd": "${fileDirname}"
