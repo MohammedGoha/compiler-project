@@ -1,10 +1,12 @@
+#define _CRT_SECURE_NO_WARNINGS
+#define UNICODE
+#define _UNICODE
 #include "framework.h"
 #include "resource.h"
 #include "scanner.h"
 #include <windows.h>
 #include <string>
 
-#define _CRT_SECURE_NO_WARNINGS
 // Global
 HINSTANCE hInst;
 HWND hEditInput, hEditOutput, hButton;
