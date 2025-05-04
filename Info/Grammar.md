@@ -18,11 +18,11 @@ S = F | R | W | RE | CO
 # IF STATEMENT
     F = (if . C . then . P) | (end | else . P . end)
 
-**condition**
+**Condition**
 C = E . > . E | E . = .E
-**expression**
+**Expression**
 E = ((I | N) . O . (I|N)) | (I | N)
-**operator**
+**Operator**
 O = * | / | + | -
 
 # ASSIGMENT STATEMENT
