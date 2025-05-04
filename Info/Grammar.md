@@ -21,7 +21,7 @@ S = F | R | W | RE | CO
 **Condition**
 C = E . > . E | E . = . E
 **Expression**
-E = ((I | N) . O . (I|N)) | (I | N)
+E = ((I | N) . O . ( I | N )) | (I | N)
 **Operator**
 O = * | / | + | -
 
