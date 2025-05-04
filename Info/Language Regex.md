@@ -4,9 +4,9 @@
 
 # Identifier
 
-**letter**
+**Letter**
 L = a-z | A-Z
-**digit**
+**Digit**
 D = 0-9
 
     I = L . ( L | D)*
