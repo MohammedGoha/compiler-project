@@ -51,4 +51,4 @@ U = I | SL | I , U | SL , U
     CO = {SE}
 
 **Sentence**
-SE = I . SE | D . SE | I | D
+SE = I . SE | N . SE | I | N
