@@ -9,7 +9,6 @@
                 "-g",
                 "${file}",
                 "Scanner.cpp",
-                "Parser.cpp",
                 "-o",
                 "${fileDirname}\\..\\Release\\${fileBasenameNoExtension}.exe",
                 "-luser32",
