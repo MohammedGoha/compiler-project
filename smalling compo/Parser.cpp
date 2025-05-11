@@ -104,10 +104,10 @@ void parseStatement(const std::vector<scannerToken>& tokens, size_t& currTokenIn
     case REPEAT_KW: parseRepeat(tokens,currTokenIndex); break;
     case ID: parseAssignment(tokens, currTokenIndex); break;
     case LEFTBRACKET: parseComment(tokens,currTokenIndex); break;
+    case UNKNOWN: error("invalid Token.", tokens[currTokenIndex].line);
     default: 
-        error("Invalid Token", tokens[currTokenIndex].line); 
-        std::cout << reverseTokenMap.at(tokens[currTokenIndex].type)<<std::endl; 
-        return;
+        error("not a valid statement.", tokens[currTokenIndex].line); 
+        break;
     }
 
 }
@@ -125,6 +125,7 @@ void parseComment(const std::vector<scannerToken>& tokens, size_t& currTokenInde
 
     if (!jumpTo(tokens, currTokenIndex, RIGHTBRACKET)) {
         error("comment not terminated.", tokens[currTokenIndex - 1].line);
+        currTokenIndex--;
         return;
     }
 
@@ -135,12 +136,12 @@ void parseAssignment(const std::vector<scannerToken>& tokens, size_t& currTokenI
 
     if (advanceToken(tokens, currTokenIndex)) {
         error("Assignment statement must include assignment operator", tokens[currTokenIndex - 1].line);
-        error("Missing semicolon", tokens[currTokenIndex - 1].line);
         return;
     }
     
     if (tokens[currTokenIndex].type != ASSIGNMENTOP) {
-        error("Assignment statement must include assignment operator", tokens[currTokenIndex - 1].line);
+        error("Assignment statement must include assignment operator", tokens[currTokenIndex].line);
+        currTokenIndex--;
         return;
     }
 
@@ -160,8 +161,23 @@ void parseAssignment(const std::vector<scannerToken>& tokens, size_t& currTokenI
     }
 
     if (tokens[currTokenIndex].type != SEMICOLON) {
-        error("Missing semicolon.", tokens[currTokenIndex - 1].line);
-        currTokenIndex--;
+        if (tokens[currTokenIndex].line > tokens[currTokenIndex - 1].line) {
+            error("Missing semicolon.", tokens[currTokenIndex - 1].line);
+            currTokenIndex--;
+        }
+        else {
+            error("Missing semicolon.", tokens[currTokenIndex].line);
+            currTokenIndex--;
+        }
+        return;
+    }
+
+    if (tokens[currTokenIndex].type == SEMICOLON) {
+        if (tokens[currTokenIndex].line > tokens[currTokenIndex - 1].line) {
+            error("Missing semicolon.", tokens[currTokenIndex - 1].line);
+            currTokenIndex--;
+            return;
+        }
         return;
     }
     
@@ -188,11 +204,7 @@ void parseRepeat(const std::vector<scannerToken>& tokens, size_t& currTokenIndex
 
     if (currTokenIndex == range) {
         error("Missing statements.", tokens[currTokenIndex].line);
-        error("Missing condition.", tokens[currTokenIndex].line);
-        error("Missing semicolon.", tokens[currTokenIndex].line);
-        return;
     }
-
     else {
         for (currTokenIndex; currTokenIndex < range; currTokenIndex++) {
             parseStatement(tokens, currTokenIndex);
@@ -224,8 +236,23 @@ void parseRepeat(const std::vector<scannerToken>& tokens, size_t& currTokenIndex
     }
 
     if (tokens[currTokenIndex].type != SEMICOLON) {
-        error("Missing semicolon.", tokens[currTokenIndex].line);
-        currTokenIndex--;
+        if (tokens[currTokenIndex].line > tokens[currTokenIndex - 1].line) {
+            error("Missing semicolon.", tokens[currTokenIndex-1].line);
+            currTokenIndex--;
+        }
+        else {
+            error("Missing semicolon.", tokens[currTokenIndex].line);
+            currTokenIndex--;
+        }
+        return;
+    }
+    
+    if (tokens[currTokenIndex].type == SEMICOLON) {
+        if (tokens[currTokenIndex].line > tokens[currTokenIndex - 1].line) {
+            error("Missing semicolon.", tokens[currTokenIndex-1].line);
+            currTokenIndex--;
+            return;
+        }
         return;
     }
         
@@ -257,11 +284,29 @@ void parseWrite(const std::vector<scannerToken>& tokens, size_t& currTokenIndex)
             return;
         }
 
+        if (tokens[currTokenIndex].line > tokens[currTokenIndex - 1].line) {
+            error("Missing semicolon.", tokens[currTokenIndex - 1].line);
+            error("Expected identifier or string literal after comma", tokens[currTokenIndex - 1].line);
+            currTokenIndex--;
+            return;
+        }
+
         if (tokens[currTokenIndex].type != ID && tokens[currTokenIndex].type != STRING_LITERAL) {
-            error("Expected identifier or string literal after comma", tokens[currTokenIndex].line);
+            error("Expected identifier or string literal after comma", tokens[currTokenIndex - 1].line);
             
+            if (tokens[currTokenIndex].type == SEMICOLON) {
+                if (tokens[currTokenIndex].line > tokens[currTokenIndex - 1].line) {
+                    error("Missing semicolon.", tokens[currTokenIndex - 1].line);
+                    currTokenIndex--;
+                    return;
+                }
+                return;
+            }
+
             if (advanceToken(tokens, currTokenIndex)) {
-                error("Missing semicolon", tokens[currTokenIndex - 1].line);
+                if (tokens[currTokenIndex-1].type != SEMICOLON) {
+                    error("Missing semicolon", tokens[currTokenIndex - 1].line);
+                }
                 return;
             }
 
@@ -276,8 +321,23 @@ void parseWrite(const std::vector<scannerToken>& tokens, size_t& currTokenIndex)
     }
 
     if (tokens[currTokenIndex].type != SEMICOLON) {
-        error("Missing semicolon.", tokens[currTokenIndex-1].line);
-        currTokenIndex--;
+        if (tokens[currTokenIndex].line > tokens[currTokenIndex - 1].line) {
+            error("Missing semicolon.", tokens[currTokenIndex - 1].line);
+            currTokenIndex--;
+        }
+        else {
+            error("Missing semicolon.", tokens[currTokenIndex].line);
+            currTokenIndex--;
+        }
+        return;
+    }
+
+    if (tokens[currTokenIndex].type == SEMICOLON) {
+        if (tokens[currTokenIndex].line > tokens[currTokenIndex - 1].line) {
+            error("Missing semicolon.", tokens[currTokenIndex - 1].line);
+            currTokenIndex--;
+            return;
+        }
         return;
     }
 
@@ -310,8 +370,24 @@ void parseRead(const std::vector<scannerToken>& tokens, size_t& currTokenIndex) 
             return;
         }
 
+        if (tokens[currTokenIndex].line > tokens[currTokenIndex - 1].line) {
+            error("Missing semicolon.", tokens[currTokenIndex - 1].line);
+            error("Expected identifier after comma", tokens[currTokenIndex - 1].line);
+            currTokenIndex--;
+            return;
+        }
+
         if (tokens[currTokenIndex].type != ID) {
             error("Expected an identifier after comma.", tokens[currTokenIndex].line);
+            
+            if (tokens[currTokenIndex].type == SEMICOLON) {
+                if (tokens[currTokenIndex].line > tokens[currTokenIndex - 1].line) {
+                    error("Missing semicolon.", tokens[currTokenIndex - 1].line);
+                    currTokenIndex--;
+                    return;
+                }
+                return;
+            }
             
             if (advanceToken(tokens, currTokenIndex)) {
                 error("Missing semicolon", tokens[currTokenIndex - 1].line);
@@ -329,8 +405,23 @@ void parseRead(const std::vector<scannerToken>& tokens, size_t& currTokenIndex) 
     }
 
     if (tokens[currTokenIndex].type != SEMICOLON) {
-        error("Missing semicolon.", tokens[currTokenIndex-1].line);
-        currTokenIndex--;
+        if (tokens[currTokenIndex].line > tokens[currTokenIndex - 1].line) {
+            error("Missing semicolon.", tokens[currTokenIndex - 1].line);
+            currTokenIndex--;
+        }
+        else {
+            error("Missing semicolon.", tokens[currTokenIndex].line);
+            currTokenIndex--;
+        }
+        return;
+    }
+
+    if (tokens[currTokenIndex].type == SEMICOLON) {
+        if (tokens[currTokenIndex].line > tokens[currTokenIndex - 1].line) {
+            error("Missing semicolon.", tokens[currTokenIndex - 1].line);
+            currTokenIndex--;
+            return;
+        }
         return;
     }
 
@@ -349,6 +440,8 @@ void parseIf(const std::vector<scannerToken>& tokens, size_t& currTokenIndex) {
         error("Invalid Condition.", tokens[currTokenIndex].line);
         if (!jumpTo(tokens, currTokenIndex, THEN_KW)) {
             error("Missing keyword then", tokens[currTokenIndex].line);
+            currTokenIndex--;
+            return;
         }
     }
     
@@ -367,7 +460,7 @@ void parseIf(const std::vector<scannerToken>& tokens, size_t& currTokenIndex) {
     }
 
     if (advanceToken(tokens, currTokenIndex)) {
-        error("Missing if body", tokens[currTokenIndex - 1].line);
+        error("Missing keyword end", tokens[currTokenIndex - 1].line);
         return;
     }
 
