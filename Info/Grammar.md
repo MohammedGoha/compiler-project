@@ -16,7 +16,7 @@ D = 0-9
 S = F | R | W | RE | CO
 
 # IF STATEMENT
-    F = (if . C . then . P) . (end | else . P . end)
+    F = (if . C . then .(P | λ) . (end | else . (P | λ) . end)
 
 **Condition**
 C = E . > . E | E . = . E
