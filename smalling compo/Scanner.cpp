@@ -1,17 +1,18 @@
-#include "scanner.h"
+#include "functions.h"
 #include <cctype>
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
 
+
 using namespace std;
 
 // Map keywords to token types
-unordered_map<string, TokenType> keywords = {
+unordered_map<string, TokenType2> keywords = {
     {"if", IF_KW}, {"then", THEN_KW}, {"else", ELSE_KW}, {"end", END_KW}, {"repeat", REPEAT_KW}, {"until", UNTIL_KW}, {"read", READ_KW}, {"write", WRITE_KW}};
 
 // Function to check if a character is a special single-character operator/symbol
-TokenType getSingleCharToken(char ch)
+TokenType2 getSingleCharToken(char ch)
 {
     switch (ch)
     {
@@ -43,7 +44,7 @@ TokenType getSingleCharToken(char ch)
     }
 }
 
-string tokenTypeToString(TokenType t)
+string tokenTypeToString(TokenType2 t)
 {
     switch (t)
     {
@@ -130,7 +131,7 @@ std::string runScanner(const std::string &input)
         }
         else
         {
-            TokenType tokenType = getSingleCharToken(input[i]);
+            TokenType2 tokenType = getSingleCharToken(input[i]);
             bool flag = false;
             if (tokenType != UNKNOWN)
             {

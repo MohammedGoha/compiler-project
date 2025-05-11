@@ -1,0 +1,17 @@
+﻿  smalling compo.cpp
+C:\Users\Daily driver\source\repos\compiler-project\smalling compo\smalling compo.cpp(2,9): warning C4005: 'UNICODE': macro redefinition
+      C:\Users\Daily driver\source\repos\compiler-project\smalling compo\smalling compo.cpp(2,9):
+      'UNICODE' previously declared on the command line
+  
+C:\Users\Daily driver\source\repos\compiler-project\smalling compo\smalling compo.cpp(3,9): warning C4005: '_UNICODE': macro redefinition
+      C:\Users\Daily driver\source\repos\compiler-project\smalling compo\smalling compo.cpp(3,9):
+      '_UNICODE' previously declared on the command line
+  
+C:\Users\Daily driver\source\repos\compiler-project\smalling compo\functions.h(23,15): error C3646: 'type': unknown override specifier
+  (compiling source file 'smalling%20compo.cpp')
+  
+C:\Users\Daily driver\source\repos\compiler-project\smalling compo\functions.h(23,5): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+  (compiling source file 'smalling%20compo.cpp')
+  
+  Scanner.cpp
+  Generating Code...

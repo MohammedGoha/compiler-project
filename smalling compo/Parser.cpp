@@ -4,21 +4,10 @@
 #include <sstream>
 #include <stdexcept>
 #include <map>
-
-enum TokenType {
-    IF_KW, THEN_KW, ELSE_KW, END_KW, REPEAT_KW, UNTIL_KW, READ_KW, WRITE_KW,
-    ID, NUMBER, ASSIGNMENTOP, STRING_LITERAL, ADDOP, SUBOP, MULOP, DIVOP,
-    COMPARISONOP, SEMICOLON, PUNCTUATION, LEFTBRACKET, RIGHTBRACKET, COMMA,
-    NEWLINE, UNKNOWN
-};
-struct Token {
-    TokenType type;
-    std::string value;
-    int line;
-};
+#include"functions.h"
 
 // Mapping for string tokens to enum types
-std::map<std::string, TokenType> tokenMap = {
+std::map<std::string, TokenType2> tokenMap = {
     {"IF_KW", IF_KW}, {"THEN_KW", THEN_KW}, {"ELSE_KW", ELSE_KW},
     {"END_KW", END_KW}, {"REPEAT_KW", REPEAT_KW}, {"UNTIL_KW", UNTIL_KW},
     {"READ_KW", READ_KW}, {"WRITE_KW", WRITE_KW}, {"ID", ID},
@@ -28,7 +17,7 @@ std::map<std::string, TokenType> tokenMap = {
     {"PUNCTUATION", PUNCTUATION}, {"LEFTBRACKET", LEFTBRACKET}, {"RIGHTBRACKET", RIGHTBRACKET},
     {"COMMA", COMMA}, {"NEWLINE", NEWLINE}, {"UNKNOWN",UNKNOWN}
 };
-std::map<TokenType, std::string> reverseTokenMap = {
+std::map<TokenType2, std::string> reverseTokenMap = {
     {IF_KW, "IF_KW"}, {THEN_KW, "THEN_KW"}, {ELSE_KW, "ELSE_KW"},
     {END_KW, "END_KW"}, {REPEAT_KW, "REPEAT_KW"}, {UNTIL_KW, "UNTIL_KW"},
     {READ_KW, "READ_KW"}, {WRITE_KW, "WRITE_KW"}, {ID, "ID"},
@@ -38,57 +27,51 @@ std::map<TokenType, std::string> reverseTokenMap = {
     {PUNCTUATION, "PUNCTUATION"}, {LEFTBRACKET, "LEFTBRACKET"}, {RIGHTBRACKET, "RIGHTBRACKET"},
     {COMMA, "COMMA"}, {NEWLINE, "NEWLINE"}, {UNKNOWN, "UNKNOWN"}
 };
-std::vector<std::string> errors;
+std::stringstream errorStream;
 
 void error(const std::string& message, const int& line) {
-    errors.push_back("Line " + std::to_string(line) +": " + message);
+    errorStream << "Line " << line << ": " << message << "\r\n";
 }
 
-std::vector<Token> tokenize(const std::string& tokenString){
 
-    std::vector<Token> tokens;
+std::vector<scannerToken> tokenize(const std::string& tokenString){
+
+    std::vector<scannerToken> tokens;
     std::istringstream stream(tokenString);
     std::string tokenStr;
     int line = 1;
 
 
     while (stream >> tokenStr) {
-        
+
         if (tokenStr == "NEWLINE") {
             line++;
             continue;
         }
-        
-        Token token;
+
+        // Skip unknown tokens
+        if (tokenMap.find(tokenStr) == tokenMap.end()) {
+            continue;
+        }
+
+        scannerToken token;
         token.value = tokenStr;
         token.line = line;
         token.type = tokenMap.at(tokenStr);
 
         tokens.push_back(token);
-
     }
+
 
     return tokens;
 }
 
-void parseIf(const std::vector<Token>& tokens, size_t& currTokenIndex);
-bool parseCondition(const std::vector<Token>& tokens, size_t& currTokenIndex);
-bool parseExpression(const std::vector<Token>& tokens, size_t& currTokenIndex);
-void parseWrite(const std::vector<Token>& tokens, size_t& currTokenIndex);
-void parseRead(const std::vector<Token>& tokens,size_t& currTokenIndex);
-void parseRepeat(const std::vector<Token>& tokens, size_t& currTokenIndex);
-void parseComment(const std::vector<Token>& tokens, size_t& currTokenIndex);
-void parseAssignment(const std::vector<Token>& tokens, size_t& currTokenIndex);
-bool lookahead(const std::vector<Token>& tokens, size_t& currTokenIndex, TokenType type);
-bool jumpTo(const std::vector<Token>& tokens, size_t& currTokenIndex, TokenType Token);
-bool advanceToken(const std::vector<Token>& tokens, size_t& currTokenIndex);
-
-bool advanceToken(const std::vector<Token>& tokens, size_t& currTokenIndex) {
+bool advanceToken(const std::vector<scannerToken>& tokens, size_t& currTokenIndex) {
     currTokenIndex++;
     return currTokenIndex >= tokens.size();
 }
 
-bool jumpTo(const std::vector<Token>& tokens, size_t& currTokenIndex, TokenType Token) {
+bool jumpTo(const std::vector<scannerToken>& tokens, size_t& currTokenIndex, TokenType2 Token) {
     size_t temp = currTokenIndex;
     while (temp < tokens.size() && tokens[temp].type != Token) {
         temp++;
@@ -102,7 +85,7 @@ bool jumpTo(const std::vector<Token>& tokens, size_t& currTokenIndex, TokenType 
     return true;
 }
 
-bool lookahead(const std::vector<Token>& tokens, size_t& currTokenIndex, TokenType type) {
+bool lookahead(const std::vector<scannerToken>& tokens, size_t& currTokenIndex, TokenType2 type) {
 
     for (size_t temp = currTokenIndex; temp < tokens.size(); temp++) {
         if (tokens[temp].type == type) {
@@ -112,7 +95,7 @@ bool lookahead(const std::vector<Token>& tokens, size_t& currTokenIndex, TokenTy
     return false;
 }
 
-void parseStatement(const std::vector<Token>& tokens, size_t& currTokenIndex) {
+void parseStatement(const std::vector<scannerToken>& tokens, size_t& currTokenIndex) {
 
     switch (tokens[currTokenIndex].type) {
     case IF_KW: parseIf(tokens,currTokenIndex); break;
@@ -133,7 +116,7 @@ void printindex(size_t& currTokenIndex) {
     std::cout << currTokenIndex << std::endl;
 }
 
-void parseComment(const std::vector<Token>& tokens, size_t& currTokenIndex) {
+void parseComment(const std::vector<scannerToken>& tokens, size_t& currTokenIndex) {
 
     if (advanceToken(tokens, currTokenIndex)) {
         error("comment not terminated.", tokens[currTokenIndex - 1].line);
@@ -148,11 +131,12 @@ void parseComment(const std::vector<Token>& tokens, size_t& currTokenIndex) {
     return;
 }
 
-void parseAssignment(const std::vector<Token>& tokens, size_t& currTokenIndex) {
+void parseAssignment(const std::vector<scannerToken>& tokens, size_t& currTokenIndex) {
 
     if (advanceToken(tokens, currTokenIndex)) {
         error("Assignment statement must include assignment operator", tokens[currTokenIndex - 1].line);
         error("Missing semicolon", tokens[currTokenIndex - 1].line);
+        return;
     }
     
     if (tokens[currTokenIndex].type != ASSIGNMENTOP) {
@@ -184,7 +168,7 @@ void parseAssignment(const std::vector<Token>& tokens, size_t& currTokenIndex) {
     return;
 }
 
-void parseRepeat(const std::vector<Token>& tokens, size_t& currTokenIndex) {
+void parseRepeat(const std::vector<scannerToken>& tokens, size_t& currTokenIndex) {
 
     if (!lookahead(tokens, currTokenIndex, UNTIL_KW)) {
         error("Missing keyword until", tokens[currTokenIndex].line);
@@ -248,7 +232,7 @@ void parseRepeat(const std::vector<Token>& tokens, size_t& currTokenIndex) {
     return;
 }
 
-void parseWrite(const std::vector<Token>& tokens, size_t& currTokenIndex) {
+void parseWrite(const std::vector<scannerToken>& tokens, size_t& currTokenIndex) {
 
     if (advanceToken(tokens, currTokenIndex)) {
         error("write must be followed by an identifier/string literal", tokens[currTokenIndex - 1].line);
@@ -301,7 +285,7 @@ void parseWrite(const std::vector<Token>& tokens, size_t& currTokenIndex) {
     return;
 }
 
-void parseRead(const std::vector<Token>& tokens, size_t& currTokenIndex) {
+void parseRead(const std::vector<scannerToken>& tokens, size_t& currTokenIndex) {
 
     if (advanceToken(tokens, currTokenIndex)) {
         error("read must be followed by an identifier", tokens[currTokenIndex - 1].line);
@@ -354,7 +338,7 @@ void parseRead(const std::vector<Token>& tokens, size_t& currTokenIndex) {
     return;
 }
 
-void parseIf(const std::vector<Token>& tokens, size_t& currTokenIndex) {
+void parseIf(const std::vector<scannerToken>& tokens, size_t& currTokenIndex) {
 
     if (advanceToken(tokens,currTokenIndex)) {
         error("Invald Condition.", tokens[currTokenIndex - 1].line);
@@ -441,7 +425,7 @@ void parseIf(const std::vector<Token>& tokens, size_t& currTokenIndex) {
 
 }
 
-bool parseCondition(const std::vector<Token>& tokens, size_t& currTokenIndex){
+bool parseCondition(const std::vector<scannerToken>& tokens, size_t& currTokenIndex){
 
     
     if (!parseExpression(tokens, currTokenIndex)) {
@@ -463,7 +447,7 @@ bool parseCondition(const std::vector<Token>& tokens, size_t& currTokenIndex){
 
 }
 
-bool parseExpression(const std::vector<Token>& tokens, size_t& currTokenIndex) {
+bool parseExpression(const std::vector<scannerToken>& tokens, size_t& currTokenIndex) {
 
     if (currTokenIndex >= tokens.size()) { return false; }
     
@@ -493,39 +477,40 @@ bool parseExpression(const std::vector<Token>& tokens, size_t& currTokenIndex) {
 
 }
 
-void parseProgram(const std::vector<Token> tokens) {
+std::string parseProgram(const std::vector<scannerToken>& tokens) {
+    errorStream.str(""); // Clear any existing contents
+    errorStream.clear(); // Clear error flags if any
 
     size_t currTokenIndex = 0;
-
     for (; currTokenIndex < tokens.size(); currTokenIndex++) {
-        parseStatement(tokens,currTokenIndex);
-    }
-    
-
-}
-
-int main() {
-    std::string tokenInput;
-
-    while (true) {
-        std::cout << "Enter token stream (space-separated tokens), or 0 to exit:\n";
-        std::getline(std::cin, tokenInput);
-
-        if (tokenInput == "0") break;
-
-        // Clear previous errors if you store them globally
-        errors.clear();
-
-        // Call the parser
-        parseProgram(tokenize(tokenInput));
-
-        // Display errors, if any
-        for (const auto& error : errors) {
-            std::cout << error << std::endl;
-        }
-
-        std::cout << std::endl;
+        parseStatement(tokens, currTokenIndex);
     }
 
-    return 0;
+    return errorStream.str(); // Return the complete error report
 }
+
+//int main() {
+//    std::string tokenInput;
+//
+//    while (true) {
+//        std::cout << "Enter token stream (space-separated tokens), or 0 to exit:\n";
+//        std::getline(std::cin, tokenInput);
+//
+//        if (tokenInput == "0") break;
+//
+//        // Clear previous errors if you store them globally
+//        errors.clear();
+//
+//        // Call the parser
+//        parseProgram(tokenize(tokenInput));
+//
+//        // Display errors, if any
+//        for (const auto& error : errors) {
+//            std::cout << error << std::endl;
+//        }
+//
+//        std::cout << std::endl;
+//    }
+//
+//    return 0;
+//}

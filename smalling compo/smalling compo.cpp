@@ -3,7 +3,7 @@
 #define _UNICODE
 #include "framework.h"
 #include "resource.h"
-#include "scanner.h"
+#include "functions.h"
 #include <windows.h>
 #include <string>
 
@@ -81,7 +81,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             wcstombs_s(&convertedChars, buffer, 4096, wbuffer, 4096);
 
             // Run scanner and get result
-            std::string result = runScanner(buffer);
+            std::string result = parseProgram(tokenize(runScanner(buffer)));
 
             // Convert std::string to wide string
             wchar_t wresult[8192]; // increased buffer to be safe
