@@ -19,7 +19,7 @@ S = F | R | W | RE | CO
     F = (if . C . then .(P | λ) . (end | else . (P | λ) . end)
 
 **Condition**
-C = E . > . E | E . = . E
+C = E . < . E | E . = . E
 **Expression**
 E = ((I | N) . O . (I | N)) | (I | N)
 **Operator**
